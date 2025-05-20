@@ -55,7 +55,6 @@ interface NormalizedUserData {
   clan_tag: string | null;
 }
 
-// Helper function to normalize user data format
 function normalizeUserData(data: DiscordUserResponse): NormalizedUserData {
   return {
     id: data.id,
@@ -112,7 +111,6 @@ export const GET: APIRoute = async ({ request }) => {
       }
     });
 
-    // Handle different response statuses
     if (response.status === 404) {
       return new Response(JSON.stringify({
         error: 'User not found. This Discord user does not exist or is not accessible.'
@@ -142,12 +140,11 @@ export const GET: APIRoute = async ({ request }) => {
 
     const userData: DiscordUserResponse = await response.json();
 
-    // Format and return the user data
     return new Response(JSON.stringify(normalizeUserData(userData)), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=600' // Cache for 10 minutes
+        'Cache-Control': 'public, max-age=600'
       }
     });
   } catch (error) {

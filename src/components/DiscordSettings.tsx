@@ -237,7 +237,7 @@ export function DiscordSettings() {
             <div className="space-y-2">
               <Label htmlFor="avatar-size">Avatar Size</Label>
               <Select value={avatarSize} onValueChange={setAvatarSize}>
-                <SelectTrigger id="avatar-size">
+                <SelectTrigger id="avatar-size" className="w-full">
                   <SelectValue placeholder="Select size" />
                 </SelectTrigger>
                 <SelectContent>
@@ -256,7 +256,7 @@ export function DiscordSettings() {
                 onValueChange={setBannerExtension}
                 disabled={!showBanner}
               >
-                <SelectTrigger id="banner-extension">
+                <SelectTrigger id="banner-extension" className="w-full">
                   <SelectValue placeholder="Select format" />
                 </SelectTrigger>
                 <SelectContent>
