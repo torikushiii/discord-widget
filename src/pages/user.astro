@@ -1,0 +1,384 @@
+---
+import '@/styles/global.css';
+
+interface UserData {
+  id: string;
+  username: string;
+  avatar: string | null;
+  discriminator: string;
+  public_flags: number;
+  flags: number;
+  banner: string | null;
+  accent_color: number | null;
+  global_name: string;
+  avatar_decoration_asset: string | null;
+  nameplate_asset: string | null;
+  guild_id: string | null;
+  clan_badge: string | null;
+  clan_tag: string | null;
+}
+
+interface CacheEntry {
+  data: UserData;
+  timestamp: number;
+}
+
+const userCache = new Map<string, CacheEntry>();
+const CACHE_TTL = 10 * 60 * 1000;
+
+async function getUserData(userId: string): Promise<UserData | null> {
+  const cachedEntry = userCache.get(userId);
+  const now = Date.now();
+
+  if (cachedEntry && (now - cachedEntry.timestamp) < CACHE_TTL) {
+    console.log(`Using cached data for user ${userId}`);
+    return cachedEntry.data;
+  }
+
+  try {
+    const apiUrl = new URL('/api/user', Astro.url);
+    apiUrl.searchParams.set('id', userId);
+
+    const response = await fetch(apiUrl);
+    if (!response.ok) {
+      return null;
+    }
+
+    const userData = await response.json() as UserData;
+    userCache.set(userId, {
+      data: userData,
+      timestamp: now
+    });
+
+    return userData;
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+    return null;
+  }
+}
+
+const params = Astro.url.searchParams;
+const userId = params.get('id') || "";
+const darkTheme = params.get('theme') !== "light";
+const showAvatar = params.get('avatar') !== "false";
+const showBanner = params.get('banner') !== "false";
+const showNameplate = params.get('nameplate') !== "false";
+const nameplateAnimated = params.get('nameplate_animated') !== "false";
+const showClanBadge = params.get('clan') !== "false";
+const showDecoration = params.get('decoration') !== "false";
+const avatarSize = params.get('size') || "128";
+let bannerExtension = params.get('ext') || "webp";
+if (bannerExtension === "auto") {
+  bannerExtension = "webp"; // Default to webp, will be changed to gif if animated
+}
+
+let userData: UserData | null = null;
+let errorMessage: string | null = null;
+
+if (!userId) {
+  errorMessage = "Please provide a Discord user ID";
+} else {
+  userData = await getUserData(userId);
+  if (!userData) {
+    errorMessage = "Failed to fetch user data";
+  }
+}
+
+let avatarUrl = '';
+let bannerUrl = '';
+let avatarDecorationUrl = '';
+let nameplateUrl = '';
+let clanBadgeUrl = '';
+const discordLogoUrl = darkTheme ? "/discord.png" : "/discord-black.png";
+
+if (userData) {
+  avatarUrl = userData.avatar ?
+    `https://cdn.discordapp.com/avatars/${userId}/${userData.avatar}?size=${avatarSize}` :
+    `https://cdn.discordapp.com/embed/avatars/${parseInt(userData.discriminator) % 5}.png?size=${avatarSize}`;
+
+  const isAnimatedBanner = userData.banner && userData.banner.startsWith('a_');
+  if (isAnimatedBanner && (params.get('ext') === null || params.get('ext') === 'auto')) {
+    bannerExtension = 'gif';
+  }
+
+  const staticParam = (bannerExtension !== 'gif' && isAnimatedBanner) ? '&static=1' : '';
+  bannerUrl = userData.banner ?
+    `https://cdn.discordapp.com/banners/${userId}/${userData.banner}.${bannerExtension}?size=480${staticParam}` : "";
+
+  avatarDecorationUrl = userData.avatar_decoration_asset ?
+    `https://cdn.discordapp.com/avatar-decoration-presets/${userData.avatar_decoration_asset}.png?size=160&passthrough=true` : "";
+
+  nameplateUrl = userData.nameplate_asset ?
+    nameplateAnimated ?
+      `https://cdn.discordapp.com/assets/collectibles/${userData.nameplate_asset}asset.webm` :
+      `https://cdn.discordapp.com/assets/collectibles/${userData.nameplate_asset}static.png`
+    : "";
+
+  clanBadgeUrl = userData.clan_badge && userData.guild_id ?
+    `https://cdn.discordapp.com/clan-badges/${userData.guild_id}/${userData.clan_badge}.png?size=16` : "";
+}
+
+// Set cache control headers for the page
+Astro.response.headers.set('Cache-Control', 'public, max-age=600');
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Discord User Widget</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      width: 100%;
+      height: 100%;
+    }
+
+    .discord-widget {
+      font-family: 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px 0 rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      width: 288px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .discord-dark {
+      background-color: #36393f;
+      color: #ffffff;
+    }
+    .discord-banner-section {
+      height: 96px;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .discord-banner {
+      height: 100%;
+      width: 100%;
+      background-size: cover;
+      background-position: center;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+    }
+    .discord-user-section {
+      height: 64px;
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .discord-nameplate {
+      position: absolute;
+      top: 0;
+      left: -64px;
+      right: 0;
+      bottom: 0;
+      overflow: hidden;
+      z-index: 0;
+    }
+    .discord-nameplate video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .discord-nameplate img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .discord-nameplate:after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0) 50%);
+      pointer-events: none;
+    }
+    .discord-avatar-container {
+      position: relative;
+      flex-shrink: 0;
+      z-index: 1;
+    }
+    .discord-avatar-wrapper {
+      position: relative;
+      width: 48px;
+      height: 48px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .discord-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 3px solid var(--bg-color);
+      position: relative;
+      z-index: 1;
+    }
+    .discord-avatar-decoration {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      height: 100%;
+      transform: scale(1.03);
+      pointer-events: none;
+      z-index: 2;
+      object-fit: contain;
+    }
+    .discord-user-details {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+      z-index: 1;
+    }
+    .discord-username {
+      font-size: 16px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .discord-tag {
+      font-size: 13px;
+      color: var(--tag-color);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .discord-mini-logo {
+      width: 12px;
+      height: 12px;
+      flex-shrink: 0;
+    }
+    .discord-clan {
+      display: inline-flex;
+      align-items: center;
+      background-color: var(--clan-bg);
+      padding: 1px 4px;
+      border-radius: 3px;
+      margin-left: 2px;
+      flex-shrink: 0;
+    }
+    .discord-clan img {
+      width: 12px;
+      height: 12px;
+      margin-right: 3px;
+      flex-shrink: 0;
+    }
+    .discord-clan-tag {
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .discord-widget.with-banner {
+      height: 160px;
+    }
+
+    .discord-widget.without-banner {
+      height: 64px;
+    }
+
+    .discord-error {
+      padding: 12px 16px;
+      text-align: center;
+      font-size: 14px;
+      line-height: 1.4;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+    }
+    .discord-error-icon {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  {errorMessage ? (
+    <div class={`discord-widget ${darkTheme ? 'discord-dark' : ''} without-banner`} style={`
+      --bg-color: ${darkTheme ? '#36393f' : '#ffffff'};
+      --tag-color: ${darkTheme ? '#b9bbbe' : '#72767d'};
+      --clan-bg: ${darkTheme ? 'rgba(79,84,92,0.3)' : 'rgba(79,84,92,0.1)'};
+    `}>
+      <div class="discord-error">
+        <div class="discord-error-icon">⚠️</div>
+        <div>{errorMessage}</div>
+      </div>
+    </div>
+  ) : (
+    <div class={`discord-widget ${darkTheme ? 'discord-dark' : ''} ${showBanner && bannerUrl ? 'with-banner' : 'without-banner'}`} style={`
+      --bg-color: ${darkTheme ? '#36393f' : '#ffffff'};
+      --tag-color: ${darkTheme ? '#b9bbbe' : '#72767d'};
+      --clan-bg: ${darkTheme ? 'rgba(79,84,92,0.3)' : 'rgba(79,84,92,0.1)'};
+    `}>
+      {showBanner && bannerUrl && (
+        <div class="discord-banner-section">
+          <div class="discord-banner" style={`background-image: url('${bannerUrl}')`}></div>
+        </div>
+      )}
+      <div class="discord-user-section">
+        {showNameplate && nameplateUrl && (
+          <div class="discord-nameplate">
+            {nameplateAnimated ? (
+              <video autoplay loop muted playsinline>
+                <source src={nameplateUrl} type="video/webm">
+              </video>
+            ) : (
+              <img src={nameplateUrl} alt="Nameplate" />
+            )}
+          </div>
+        )}
+        {showAvatar && avatarUrl && (
+          <div class="discord-avatar-container">
+            <div class="discord-avatar-wrapper">
+              <img class="discord-avatar" src={avatarUrl} alt="Discord Avatar" />
+              {showDecoration && avatarDecorationUrl && (
+                <img class="discord-avatar-decoration" src={avatarDecorationUrl} alt="Avatar Decoration" />
+              )}
+            </div>
+          </div>
+        )}
+        <div class="discord-user-details">
+          <div class="discord-username">
+            {userData?.global_name || "Unknown User"}
+          </div>
+          <div class="discord-tag">
+            <img class="discord-mini-logo" src={discordLogoUrl} alt="Discord Logo" />
+            Discord
+            {showClanBadge && userData?.clan_tag && clanBadgeUrl && (
+              <span class="discord-clan">
+                <img src={clanBadgeUrl} alt="Clan Badge" />
+                <span class="discord-clan-tag">{userData.clan_tag}</span>
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )}
+</body>
+</html>

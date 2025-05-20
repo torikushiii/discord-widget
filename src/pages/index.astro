@@ -1,0 +1,11 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { DiscordSettings } from '../components/DiscordSettings';
+---
+
+<Layout content={{ title: "Discord Settings" }}>
+  <main class="container max-w-4xl mx-auto p-4 py-8">
+    <h1 class="text-2xl font-bold mb-8 text-center">Discord Widget Settings</h1>
+    <DiscordSettings client:load />
+  </main>
+</Layout>
