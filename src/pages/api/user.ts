@@ -55,6 +55,14 @@ interface NormalizedUserData {
   clan_tag: string | null;
 }
 
+interface CacheEntry {
+  data: NormalizedUserData;
+  timestamp: number;
+}
+
+const apiCache = new Map<string, CacheEntry>();
+const API_CACHE_TTL = 10 * 60 * 1000;
+
 function normalizeUserData(data: DiscordUserResponse): NormalizedUserData {
   return {
     id: data.id,
@@ -74,12 +82,7 @@ function normalizeUserData(data: DiscordUserResponse): NormalizedUserData {
   };
 }
 
-// Discord user ID validation (Discord IDs are snowflakes - unique 64-bit integers)
 function isValidDiscordUserId(id: string): boolean {
-  // Discord IDs:
-  // - Are numeric only
-  // - Are between 17-20 digits (as of 2023)
-  // - Will always be positive integers
   return /^\d{17,20}$/.test(id);
 }
 
@@ -94,6 +97,20 @@ export const GET: APIRoute = async ({ request }) => {
       status: 400,
       headers: {
         'Content-Type': 'application/json'
+      }
+    });
+  }
+
+  const cachedEntry = apiCache.get(userId);
+  const now = Date.now();
+
+  if (cachedEntry && (now - cachedEntry.timestamp) < API_CACHE_TTL) {
+    return new Response(JSON.stringify(cachedEntry.data), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, max-age=600',
+        'X-Cache': 'HIT'
       }
     });
   }
@@ -139,12 +156,19 @@ export const GET: APIRoute = async ({ request }) => {
     }
 
     const userData: DiscordUserResponse = await response.json();
+    const normalizedData = normalizeUserData(userData);
 
-    return new Response(JSON.stringify(normalizeUserData(userData)), {
+    apiCache.set(userId, {
+      data: normalizedData,
+      timestamp: now
+    });
+
+    return new Response(JSON.stringify(normalizedData), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=600'
+        'Cache-Control': 'public, max-age=600',
+        'X-Cache': 'MISS'
       }
     });
   } catch (error) {

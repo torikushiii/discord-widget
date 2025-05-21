@@ -18,23 +18,7 @@ interface UserData {
   clan_tag: string | null;
 }
 
-interface CacheEntry {
-  data: UserData;
-  timestamp: number;
-}
-
-const userCache = new Map<string, CacheEntry>();
-const CACHE_TTL = 10 * 60 * 1000;
-
 async function getUserData(userId: string): Promise<UserData | null> {
-  const cachedEntry = userCache.get(userId);
-  const now = Date.now();
-
-  if (cachedEntry && (now - cachedEntry.timestamp) < CACHE_TTL) {
-    console.log(`Using cached data for user ${userId}`);
-    return cachedEntry.data;
-  }
-
   try {
     const apiUrl = new URL('/api/user', Astro.url);
     apiUrl.searchParams.set('id', userId);
@@ -45,11 +29,6 @@ async function getUserData(userId: string): Promise<UserData | null> {
     }
 
     const userData = await response.json() as UserData;
-    userCache.set(userId, {
-      data: userData,
-      timestamp: now
-    });
-
     return userData;
   } catch (error) {
     console.error('Error fetching user data:', error);
@@ -91,6 +70,20 @@ let nameplateUrl = '';
 let clanBadgeUrl = '';
 const discordLogoUrl = darkTheme ? "/discord.png" : "/discord-black.png";
 
+function hexToRgb(hex: number | null): string {
+  if (hex === null) {
+    return darkTheme ? '#5865F2' : '#5865F2';
+  }
+
+  const r = (hex >> 16) & 255;
+  const g = (hex >> 8) & 255;
+  const b = hex & 255;
+
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
+let bannerColor = '';
+
 if (userData) {
   avatarUrl = userData.avatar ?
     `https://cdn.discordapp.com/avatars/${userId}/${userData.avatar}?size=${avatarSize}` :
@@ -105,6 +98,8 @@ if (userData) {
   bannerUrl = userData.banner ?
     `https://cdn.discordapp.com/banners/${userId}/${userData.banner}.${bannerExtension}?size=480${staticParam}` : "";
 
+  bannerColor = hexToRgb(userData.accent_color);
+
   avatarDecorationUrl = userData.avatar_decoration_asset ?
     `https://cdn.discordapp.com/avatar-decoration-presets/${userData.avatar_decoration_asset}.png?size=160&passthrough=true` : "";
 
@@ -118,7 +113,6 @@ if (userData) {
     `https://cdn.discordapp.com/clan-badges/${userData.guild_id}/${userData.clan_badge}.png?size=16` : "";
 }
 
-// Set cache control headers for the page
 Astro.response.headers.set('Cache-Control', 'public, max-age=600');
 ---
 
@@ -333,14 +327,18 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=600');
       </div>
     </div>
   ) : (
-    <div class={`discord-widget ${darkTheme ? 'discord-dark' : ''} ${showBanner && bannerUrl ? 'with-banner' : 'without-banner'}`} style={`
+    <div class={`discord-widget ${darkTheme ? 'discord-dark' : ''} ${showBanner ? 'with-banner' : 'without-banner'}`} style={`
       --bg-color: ${darkTheme ? '#36393f' : '#ffffff'};
       --tag-color: ${darkTheme ? '#b9bbbe' : '#72767d'};
       --clan-bg: ${darkTheme ? 'rgba(79,84,92,0.3)' : 'rgba(79,84,92,0.1)'};
     `}>
-      {showBanner && bannerUrl && (
+      {showBanner && (
         <div class="discord-banner-section">
-          <div class="discord-banner" style={`background-image: url('${bannerUrl}')`}></div>
+          {bannerUrl ? (
+            <div class="discord-banner" style={`background-image: url('${bannerUrl}')`}></div>
+          ) : (
+            <div class="discord-banner" style={`background-color: ${bannerColor}`}></div>
+          )}
         </div>
       )}
       <div class="discord-user-section">
