@@ -393,20 +393,26 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=600');
           {showGlobalName && userData?.global_name && (
             <div class="discord-global-name">
               {userData.global_name}
+              {showClanBadge && userData?.clan_tag && clanBadgeUrl && (
+                <span class="discord-clan">
+                  <img src={clanBadgeUrl} alt="Clan Badge" />
+                  <span class="discord-clan-tag">{userData.clan_tag}</span>
+                </span>
+              )}
             </div>
           )}
           <div class="discord-username">
             {userData?.username || "Unknown User"}
-          </div>
-          <div class="discord-tag">
-            <img class="discord-mini-logo" src={discordLogoUrl} alt="Discord Logo" />
-            Discord
-            {showClanBadge && userData?.clan_tag && clanBadgeUrl && (
+            {!showGlobalName && showClanBadge && userData?.clan_tag && clanBadgeUrl && (
               <span class="discord-clan">
                 <img src={clanBadgeUrl} alt="Clan Badge" />
                 <span class="discord-clan-tag">{userData.clan_tag}</span>
               </span>
             )}
+          </div>
+          <div class="discord-tag">
+            <img class="discord-mini-logo" src={discordLogoUrl} alt="Discord Logo" />
+            Discord
           </div>
         </div>
       </div>
