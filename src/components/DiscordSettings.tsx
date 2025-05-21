@@ -34,6 +34,7 @@ export function DiscordSettings() {
   const [showNameplate, setShowNameplate] = useState(true)
   const [animateNameplate, setAnimateNameplate] = useState(true)
   const [showClanBadge, setShowClanBadge] = useState(true)
+  const [showGlobalName, setShowGlobalName] = useState(false)
   const [copied, setCopied] = useState(false)
   const [avatarSize, setAvatarSize] = useState("128")
   const [bannerExtension, setBannerExtension] = useState("auto")
@@ -47,7 +48,7 @@ export function DiscordSettings() {
     if (isValidId) {
       setIsLoading(true);
     }
-  }, [userId, darkTheme, showAvatar, showBanner, showNameplate, animateNameplate, showClanBadge, showAvatarDecoration, avatarSize, bannerExtension]);
+  }, [userId, darkTheme, showAvatar, showBanner, showNameplate, animateNameplate, showClanBadge, showAvatarDecoration, showGlobalName, avatarSize, bannerExtension]);
 
   const widgetUrl = isValidId
     ? `${baseUrl}/user?id=${encodeURIComponent(userId.trim())}` +
@@ -58,12 +59,15 @@ export function DiscordSettings() {
       `&nameplate_animated=${animateNameplate ? 'true' : 'false'}` +
       `&clan=${showClanBadge ? 'true' : 'false'}` +
       `&decoration=${showAvatarDecoration ? 'true' : 'false'}` +
+      `&global_name=${showGlobalName ? 'true' : 'false'}` +
       `&size=${avatarSize}` +
       `&ext=${bannerExtension}`
     : "";
 
   const widgetWidth = 288;
-  const widgetHeight = showBanner ? 160 : 64;
+  const widgetHeight = showBanner
+    ? 160
+    : (showGlobalName ? 80 : 64);
 
   const embedCode = isValidId
     ? `<iframe
@@ -183,6 +187,20 @@ export function DiscordSettings() {
                 className="cursor-pointer"
               >
                 Show Avatar
+              </Label>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="show-global-name"
+                checked={showGlobalName}
+                onCheckedChange={(checked: CheckedState) => setShowGlobalName(checked === true)}
+              />
+              <Label
+                htmlFor="show-global-name"
+                className="cursor-pointer"
+              >
+                Show Global Name
               </Label>
             </div>
 

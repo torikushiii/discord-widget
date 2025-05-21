@@ -45,6 +45,7 @@ const showNameplate = params.get('nameplate') !== "false";
 const nameplateAnimated = params.get('nameplate_animated') !== "false";
 const showClanBadge = params.get('clan') !== "false";
 const showDecoration = params.get('decoration') !== "false";
+const showGlobalName = params.get('global_name') !== "false";
 const avatarSize = params.get('size') || "128";
 let bannerExtension = params.get('ext') || "webp";
 if (bannerExtension === "auto") {
@@ -175,6 +176,9 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=600');
       overflow: hidden;
       flex-shrink: 0;
     }
+    .with-global-name .discord-user-section {
+      height: 80px;
+    }
     .discord-nameplate {
       position: absolute;
       top: 0;
@@ -248,6 +252,24 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=600');
       z-index: 1;
     }
     .discord-username {
+      font-size: 13px;
+      font-weight: 400;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      opacity: 0.8;
+      margin-bottom: 2px;
+    }
+
+    /* When global name is not shown, make username more prominent */
+    .discord-user-details:not(:has(.discord-global-name)) .discord-username,
+    .discord-user-details.no-global-name .discord-username {
+      font-size: 14px;
+      font-weight: 600;
+      opacity: 1;
+    }
+
+    .discord-global-name {
       font-size: 14px;
       font-weight: 600;
       white-space: nowrap;
@@ -297,6 +319,10 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=600');
       height: 64px;
     }
 
+    .discord-widget.without-banner.with-global-name {
+      height: 80px;
+    }
+
     .discord-error {
       padding: 12px 16px;
       text-align: center;
@@ -327,7 +353,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=600');
       </div>
     </div>
   ) : (
-    <div class={`discord-widget ${darkTheme ? 'discord-dark' : ''} ${showBanner ? 'with-banner' : 'without-banner'}`} style={`
+    <div class={`discord-widget ${darkTheme ? 'discord-dark' : ''} ${showBanner ? 'with-banner' : 'without-banner'} ${(!showBanner && showGlobalName) ? 'with-global-name' : ''}`} style={`
       --bg-color: ${darkTheme ? '#36393f' : '#ffffff'};
       --tag-color: ${darkTheme ? '#b9bbbe' : '#72767d'};
       --clan-bg: ${darkTheme ? 'rgba(79,84,92,0.3)' : 'rgba(79,84,92,0.1)'};
@@ -363,7 +389,12 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=600');
             </div>
           </div>
         )}
-        <div class="discord-user-details">
+        <div class={`discord-user-details ${showGlobalName && userData?.global_name ? 'has-global-name' : 'no-global-name'}`}>
+          {showGlobalName && userData?.global_name && (
+            <div class="discord-global-name">
+              {userData.global_name}
+            </div>
+          )}
           <div class="discord-username">
             {userData?.username || "Unknown User"}
           </div>
