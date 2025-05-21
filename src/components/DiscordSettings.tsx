@@ -38,6 +38,7 @@ export function DiscordSettings() {
   const [avatarSize, setAvatarSize] = useState("128")
   const [bannerExtension, setBannerExtension] = useState("auto")
   const [isLoading, setIsLoading] = useState(false)
+  const [copying, setCopying] = useState(false)
 
   const isValidId = userId.trim().length >= 17 && /^\d+$/.test(userId.trim())
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
@@ -76,14 +77,19 @@ export function DiscordSettings() {
 
   const copyToClipboard = () => {
     if (embedCode) {
+      setCopying(true);
       if (navigator.clipboard) {
         navigator.clipboard.writeText(embedCode)
           .then(() => {
             setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
+            setTimeout(() => {
+              setCopied(false);
+              setCopying(false);
+            }, 2000);
           })
           .catch(err => {
             console.error('Failed to copy text: ', err);
+            setCopying(false);
           });
       } else {
         const textarea = document.createElement('textarea');
@@ -96,9 +102,13 @@ export function DiscordSettings() {
         try {
           document.execCommand('copy');
           setCopied(true);
-          setTimeout(() => setCopied(false), 2000);
+          setTimeout(() => {
+            setCopied(false);
+            setCopying(false);
+          }, 2000);
         } catch (err) {
           console.error('Fallback: Could not copy text: ', err);
+          setCopying(false);
         }
 
         document.body.removeChild(textarea);
@@ -302,19 +312,17 @@ export function DiscordSettings() {
                     variant="outline"
                     size="sm"
                     onClick={copyToClipboard}
-                    className="flex items-center gap-1"
+                    disabled={copying}
+                    className="flex items-center gap-1 relative overflow-hidden transition-all duration-300 ease-in-out"
                   >
-                    {copied ? (
-                      <>
-                        <CheckIcon className="h-4 w-4" />
-                        <span>Copied</span>
-                      </>
-                    ) : (
-                      <>
-                        <CopyIcon className="h-4 w-4" />
-                        <span>Copy</span>
-                      </>
-                    )}
+                    <div className={`flex items-center gap-1 transition-transform duration-300 ${copied ? 'transform -translate-y-full opacity-0' : ''}`}>
+                      <CopyIcon className="h-4 w-4" />
+                      <span>Copy</span>
+                    </div>
+                    <div className={`flex items-center gap-1 absolute inset-0 justify-center transition-transform duration-300 ${copied ? 'transform translate-y-0' : 'transform translate-y-full opacity-0'}`}>
+                      <CheckIcon className="h-4 w-4" />
+                      <span>Copied</span>
+                    </div>
                   </Button>
                 </div>
                 <div className="bg-muted p-3 rounded-md overflow-x-auto">
