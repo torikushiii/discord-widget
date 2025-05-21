@@ -17,3 +17,5 @@ A customizable Discord user profile widget built with Astro and React. This proj
   - Banner format options
 - Responsive embed code generation
 - Preview widget before embedding
+
+![image](https://github.com/user-attachments/assets/72e43296-860a-417a-b449-f74fd6a93c0c)
