@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { UserIcon, CopyIcon, CheckIcon, Loader2 } from "lucide-react"
+import { UserIcon, CopyIcon, CheckIcon } from "lucide-react"
+import { Spinner } from "@/components/ui/spinner"
 
 import {
   Card,
@@ -277,7 +278,7 @@ export function DiscordSettings() {
                   <div style={{ width: `${widgetWidth}px`, height: `${widgetHeight}px`, position: 'relative' }}>
                     {isLoading && (
                       <div className="absolute inset-0 flex items-center justify-center z-10">
-                        <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                        <Spinner size={16} className="text-primary" />
                       </div>
                     )}
                     <iframe
