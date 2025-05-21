@@ -50,6 +50,7 @@ interface NormalizedUserData {
   global_name: string;
   avatar_decoration_asset: string | null;
   nameplate_asset: string | null;
+  nameplate_palette: string | null;
   guild_id: string | null;
   clan_badge: string | null;
   clan_tag: string | null;
@@ -76,6 +77,7 @@ function normalizeUserData(data: DiscordUserResponse): NormalizedUserData {
     global_name: data.global_name || data.username,
     avatar_decoration_asset: data.avatar_decoration_data?.asset || null,
     nameplate_asset: data.collectibles?.nameplate?.asset || null,
+    nameplate_palette: data.collectibles?.nameplate?.palette || null,
     guild_id: data.clan?.identity_guild_id || data.primary_guild?.identity_guild_id || null,
     clan_badge: data.clan?.badge || data.primary_guild?.badge || null,
     clan_tag: data.clan?.tag || data.primary_guild?.tag || null
