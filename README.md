@@ -2,6 +2,8 @@
 
 A customizable Discord user profile widget built with Astro and React. This project allows you to embed a Discord user profile on any website.
 
+You can check it out here: [widget.ennead.cc](https://widget.ennead.cc)
+
 ## Features
 
 - Display Discord user profiles with customizable options
