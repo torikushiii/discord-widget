@@ -133,6 +133,19 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=600');
       height: 100%;
     }
 
+    .discord-user-section::before {
+      content: "";
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      left: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      border-radius: 50%;
+      background: var(--bg-color);
+      z-index: 0;
+    }
+
     .discord-nameplate {
       position: absolute;
       top: 0;
@@ -174,6 +187,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=600');
       height: 40px;
       border-radius: 50%;
       object-fit: cover;
+      z-index: 1;
     }
 
     .discord-avatar-decoration {
