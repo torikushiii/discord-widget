@@ -316,8 +316,8 @@ export function DiscordSettings() {
                   <SelectValue placeholder="Select widget type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="standard">Standard (Customizable)</SelectItem>
-                  <SelectItem value="compact">Compact (289x48)</SelectItem>
+                  <SelectItem value="standard">Standard</SelectItem>
+                  <SelectItem value="compact">Compact</SelectItem>
                 </SelectContent>
               </Select>
             </div>
