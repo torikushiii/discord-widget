@@ -15,6 +15,7 @@ export function getNameplateGradient(palette: string | null): string {
     'pink': 'linear-gradient(90deg, rgba(242,166,166,0.1) 0%, rgba(242,166,166,0.4) 100%)',
     'berry': 'linear-gradient(90deg, transparent 0%, rgba(137, 58, 153, 0.08) 20%, rgba(137, 58, 153, 0.08) 50%, rgba(137, 58, 153, 0.2) 100%)',
     'violet': 'linear-gradient(90deg, rgba(137, 58, 153, 0.1) 0%, rgba(137, 58, 153, 0.4) 100%)',
+    'bubble_gum': 'linear-gradient(90deg, transparent 0%, rgba(220, 62, 151, 0.08) 20%, rgba(220, 62, 151, 0.08) 50%, rgba(220, 62, 151, 0.2) 100%)',
   };
 
   return gradients[palette.toLowerCase()] || 'linear-gradient(90deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.4) 100%)';
