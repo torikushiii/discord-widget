@@ -21,3 +21,11 @@ You can check it out here: [widget.ennead.cc](https://widget.ennead.cc)
 - Preview widget before embedding
 
 ![image](https://github.com/user-attachments/assets/72e43296-860a-417a-b449-f74fd6a93c0c)
+
+## Standard
+
+![image](https://github.com/user-attachments/assets/cea3bbf7-d77a-49fd-91ca-2a824810c5a8)
+
+## Compact
+
+![image](https://github.com/user-attachments/assets/26852fb0-6cf0-4a42-bc14-d974ca5d411b)
