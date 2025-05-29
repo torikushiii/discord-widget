@@ -68,6 +68,7 @@ export function DiscordSettings() {
   const compactWidgetUrl = isValidId
     ? `${baseUrl}/compact?id=${encodeURIComponent(userId.trim())}` +
       `&theme=${darkTheme ? 'dark' : 'light'}` +
+      `&nameplate=${showNameplate ? 'true' : 'false'}` +
       `&nameplate_animated=${animateNameplate ? 'true' : 'false'}`
     : "";
 
@@ -286,13 +287,27 @@ export function DiscordSettings() {
                 </div>
                 <div className="flex items-center space-x-2">
                   <Checkbox
+                    id="show-nameplate-compact"
+                    checked={showNameplate}
+                    onCheckedChange={(checked: CheckedState) => setShowNameplate(checked === true)}
+                  />
+                  <Label
+                    htmlFor="show-nameplate-compact"
+                    className="cursor-pointer"
+                  >
+                    Show Nameplate
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
                     id="animate-nameplate-compact"
                     checked={animateNameplate}
                     onCheckedChange={(checked: CheckedState) => setAnimateNameplate(checked === true)}
+                    disabled={!showNameplate}
                   />
                   <Label
                     htmlFor="animate-nameplate-compact"
-                    className="cursor-pointer"
+                    className={`cursor-pointer ${!showNameplate ? "opacity-50" : ""}`}
                   >
                     Animate Nameplate
                   </Label>

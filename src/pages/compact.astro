@@ -41,6 +41,7 @@ async function getUserData(userId: string): Promise<UserData | null> {
 const params = Astro.url.searchParams;
 const userId = params.get('id') || "";
 const darkTheme = params.get('theme') !== "light";
+const showNameplate = params.get('nameplate') !== "false";
 const nameplateAnimated = params.get('nameplate_animated') !== "false";
 
 let userData: UserData | null = null;
@@ -289,7 +290,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=600');
       --clan-bg: ${darkTheme ? 'rgba(79,84,92,0.3)' : 'rgba(79,84,92,0.1)'};
       --nameplate-gradient: ${getNameplateGradient(userData?.nameplate_palette || null)};
     `}>
-      {nameplateUrl && (
+      {showNameplate && nameplateUrl && (
         <div class="discord-nameplate">
           {nameplateAnimated ? (
             <video autoplay loop muted playsinline>
