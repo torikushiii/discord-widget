@@ -28,4 +28,4 @@ You can check it out here: [widget.ennead.cc](https://widget.ennead.cc)
 
 ## Compact
 
-![image](https://github.com/user-attachments/assets/26852fb0-6cf0-4a42-bc14-d974ca5d411b)
+![image](https://github.com/user-attachments/assets/a4ec2129-e4c9-4d6f-b482-16cab1c67ef6)
