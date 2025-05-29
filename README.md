@@ -1,4 +1,9 @@
-# Discord User Widget
+# Discord User Profile Widget
+
+<div align="center">
+  <img src="https://visitor-badge.laobi.icu/badge?page_id=torikushiii.discord-widget" alt="Visitor Count">
+  <img src="https://img.shields.io/github/stars/torikushiii/discord-widget" alt="GitHub Stars">
+</div>
 
 A customizable Discord user profile widget built with Astro and React. This project allows you to embed a Discord user profile on any website.
 
